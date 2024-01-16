@@ -1,6 +1,5 @@
-
-config/*
-uploads/*
+./src/config/
+./src/uploads/
 
 # compiled output
 /dist

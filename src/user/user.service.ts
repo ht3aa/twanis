@@ -14,6 +14,8 @@ export class UserService {
     private jwtService: JwtService,
   ) {}
 
+  // you should make email validation
+
   async add(addUserDto: AddUserDto) {
     const { username, email, password } = addUserDto;
 

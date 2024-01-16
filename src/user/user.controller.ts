@@ -8,13 +8,13 @@ import {
   UsePipes, 
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiResponse, ApiCreatedResponse, ApiOkResponse, ApiNotFoundResponse, ApiBadRequestResponse } from '@nestjs/swagger';
+import { ApiTags, ApiCreatedResponse, ApiOkResponse, ApiNotFoundResponse, ApiBadRequestResponse } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { AddUserDto } from './dto/user.add';
 import { LoginUserDto } from './dto/user.login';
 
 @ApiTags('api/v1/user')
-@Controller('api/user')
+@Controller('user')
 export class UserController {
 
   constructor(private userService: UserService) {}

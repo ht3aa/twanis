@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, OneToMany, Column } from 'typeorm';
 
 @Entity()
 export class Video {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn()
   id: string;
 
   @Column({ unique: true })
@@ -16,8 +16,5 @@ export class Video {
 
   @Column()
   path: string;
-
-  @Column()
-  size: number
 
 }

@@ -9,10 +9,14 @@ import {
   ValidationPipe,
   Get,
   Req,
+  Res,
+  HttpCode,
+  StreamableFile,
 } from '@nestjs/common';
 import { VideoService } from './video.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { VideoUploadDto } from './dto/video.upload';
+import type { Response } from 'express';
 
 @Controller('video')
 @UsePipes(ValidationPipe)
@@ -29,12 +33,16 @@ export class VideoController {
   }
 
   @Get(':id')
-  async getVideo(@Param('id') id: string, @Req() req: Request) {
-    const range = req.headers.get('ranger');
-    if(!range) {
-      throw new Error('Require range header');
-    }
+  @HttpCode(206)
+  async getVideo(
+    @Param('id') id: string,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<StreamableFile> {
+    const { headers, videoStream } = await this.videoService.getVideo(id, req);
 
-    return await this.videoService.getVideo(id, req);
+    res.set(headers);
+
+    return new StreamableFile(videoStream);
   }
 }

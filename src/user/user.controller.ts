@@ -20,6 +20,9 @@ export class UserController {
   constructor(private userService: UserService) {}
 
   @ApiCreatedResponse({ description: 'User added successfully' })
+  @ApiBadRequestResponse({ description: "Email is not valid" })
+  @ApiBadRequestResponse({ description: "User with that email already exists" })
+  @ApiBadRequestResponse({ description: "User creation failed. Please try again or text support team" })
   @UsePipes(ValidationPipe)
   @Post()
   async add(

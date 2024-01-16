@@ -17,12 +17,21 @@ import { VideoService } from './video.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { VideoUploadDto } from './dto/video.upload';
 import type { Response } from 'express';
+import {
+  ApiBadRequestResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiTags('api/v1/video')
 @Controller('video')
 @UsePipes(ValidationPipe)
 export class VideoController {
   constructor(private videoService: VideoService) {}
 
+  @ApiOkResponse({ description: 'Video uploaded successfully' })
   @Post()
   @UseInterceptors(FileInterceptor('videoFile', { dest: './src/uploads' }))
   async uploadVideo(
@@ -32,6 +41,9 @@ export class VideoController {
     return await this.videoService.uploadVideo(videoFile, videoUploadDto);
   }
 
+  @ApiResponse({ status: 206, description: 'Partial of the video streamed successfully' })
+  @ApiBadRequestResponse({ description: 'Range header is required' })
+  @ApiNotFoundResponse({ description: 'Video not found' })
   @Get(':id')
   @HttpCode(206)
   async getVideo(

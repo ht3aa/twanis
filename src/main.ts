@@ -12,10 +12,9 @@ async function bootstrap() {
     .setTitle('Twanis API')
     .setDescription('Twanis API description')
     .setVersion('1.0')
-    .addTag('twanis')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  SwaggerModule.setup('api/v1/docs', app, document);
 
   await app.listen(8000);
 }

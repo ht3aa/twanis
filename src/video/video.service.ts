@@ -41,7 +41,7 @@ export class VideoService {
   async getVideo(id: string, req: Request) {
     const { range } = req.headers as headersWithRange;
     if (!range) {
-      throw new Error('Require range header');
+      throw new BadRequestException('Require range header');
     }
 
     const video = await this.videoRepository.findOneBy({ id: id });

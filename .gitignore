@@ -1,5 +1,5 @@
-./src/config/
-./src/uploads/
+src/config/
+src/uploads/
 
 # compiled output
 /dist

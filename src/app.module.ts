@@ -6,6 +6,7 @@ import { typeormConfig } from './config/typeorm.config';
 import { DataSource } from 'typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { WebSocketsModule } from './web-sockets/web-sockets.module';
 
 @Module({
   imports: [VideoModule, UserModule, TypeOrmModule.forRoot(typeormConfig),
@@ -14,6 +15,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       secret: new ConfigService().get<string>('JWT_SECRET'),
       global: true,
     }),
+    WebSocketsModule,
   ],
   controllers: [],
   providers: [],

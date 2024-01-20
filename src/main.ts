@@ -8,6 +8,10 @@ async function bootstrap() {
 
   app.setGlobalPrefix("api/v1/");
 
+  app.enableCors({
+    origin: '*',
+  })
+
   const config = new DocumentBuilder()
     .setTitle('Twanis API')
     .setDescription('Twanis API description')

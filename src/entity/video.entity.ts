@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, OneToMany, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity()
 export class Video {
@@ -10,11 +10,10 @@ export class Video {
 
   @Column()
   description: string;
-  
-  @Column()
-  filename: string;
 
   @Column()
-  path: string;
+  videoPath: string;
 
+  @Column()
+  thumbnailPath: string
 }

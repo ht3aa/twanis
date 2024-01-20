@@ -1,8 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, Redirect } from '@nestjs/common';
 import { VideoUploadDto } from './dto/video.upload';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Video } from './video.entity';
+import { Video } from '../entity/video.entity';
 import * as fs from 'fs';
 
 interface headersWithRange extends Headers {
@@ -13,16 +13,19 @@ interface headersWithRange extends Headers {
 export class VideoService {
   constructor(@InjectRepository(Video) private videoRepository: Repository<Video>) {}
 
-  async uploadVideo(videoFile: Express.Multer.File, videoUploadDto: VideoUploadDto) {
+  async uploadVideo(
+    videoFile: Express.Multer.File,
+    thumbnailFile: Express.Multer.File,
+    videoUploadDto: VideoUploadDto,
+  ) {
     const { title, description } = videoUploadDto;
-    const { filename, path } = videoFile;
 
     try {
       const video = this.videoRepository.create({
         title,
         description,
-        filename,
-        path,
+        videoPath: videoFile.path,
+        thumbnailPath: thumbnailFile.path,
       });
 
       await this.videoRepository.save(video);
@@ -34,11 +37,10 @@ export class VideoService {
         throw new BadRequestException('video upload failed. Please try again or text support team');
       }
     }
-
-    return 'video uploaded seccessfully';
+    return
   }
 
-  async getVideo(id: string, req: Request) {
+  async streamVideo(id: string, req: Request) {
     const { range } = req.headers as headersWithRange;
     if (!range) {
       throw new BadRequestException('Require range header');
@@ -46,13 +48,13 @@ export class VideoService {
 
     const video = await this.videoRepository.findOneBy({ id: id });
 
-    if(!video) {
+    if (!video) {
       throw new NotFoundException('video not found');
     }
-     
-    const { path } = video;
 
-    const size = fs.statSync("./" + path).size;
+    const { videoPath } = video;
+
+    const size = fs.statSync('./' + videoPath).size;
 
     const CHUNK_SIZE = 10 ** 6;
     const start = Number(range.replace(/\D/g, ''));
@@ -66,8 +68,41 @@ export class VideoService {
       'Content-Type': 'video/mp4',
     };
 
-    const videoStream = fs.createReadStream(path, { start, end });
+    const videoStream = fs.createReadStream(videoPath, { start, end });
 
     return { headers, videoStream };
+  }
+
+
+  async streamThumbnail(id: string) {
+    const video = await this.videoRepository.findOneBy({ id: id });
+
+    if (!video) {
+      throw new NotFoundException('video not found');
+    }
+
+    const { thumbnailPath } = video;
+    const thumbnailStream = fs.createReadStream('./' + thumbnailPath);
+
+    const headers = {
+      'Content-Type': 'image/*',
+    }
+
+    return { headers, thumbnailStream };
+
+  }
+
+  async getVides(): Promise<Video[]> {
+    return await this.videoRepository.find();
+  }
+
+  async getVideo(id: string): Promise<Video> {
+    const video = await this.videoRepository.findOneBy({ id: id });
+
+    if (!video) {
+      throw new NotFoundException('video not found');
+    }
+
+    return video;
   }
 }

@@ -14,6 +14,7 @@ import {
   StreamableFile,
   UploadedFiles,
   Redirect,
+  Delete,
 } from '@nestjs/common';
 import { VideoService } from './video.service';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
@@ -97,5 +98,12 @@ export class VideoController {
   @Get(':id')
   async getVideo(@Param('id') id: string): Promise<Video> {
     return await this.videoService.getVideo(id);
+  }
+
+  @ApiResponse({ status: 200, description: 'Video deleted successfully' })
+  @ApiNotFoundResponse({ description: 'Video not found' })
+  @Delete(':id')
+  async deleteVideo(@Param('id') id: string) {
+    return await this.videoService.deleteVideo(id);
   }
 }

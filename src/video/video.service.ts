@@ -84,6 +84,8 @@ export class VideoService {
     const { thumbnailPath } = video;
     const thumbnailStream = fs.createReadStream('./' + thumbnailPath);
 
+
+
     const headers = {
       'Content-Type': 'image/*',
     }
@@ -102,6 +104,23 @@ export class VideoService {
     if (!video) {
       throw new NotFoundException('video not found');
     }
+
+    return video;
+  }
+
+  async deleteVideo(id: string) {
+    const video = await this.videoRepository.findOneBy({ id: id });
+
+    if (!video) {
+      throw new NotFoundException('video not found');
+    }
+
+    const { videoPath, thumbnailPath } = video;
+
+    fs.unlinkSync('./' + videoPath);
+    fs.unlinkSync('./' + thumbnailPath);
+
+    await this.videoRepository.delete({ id: id });
 
     return video;
   }

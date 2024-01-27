@@ -7,11 +7,14 @@ import {
   Delete, 
   UsePipes, 
   ValidationPipe,
+  Redirect,
+  Res,
 } from '@nestjs/common';
 import { ApiTags, ApiCreatedResponse, ApiOkResponse, ApiNotFoundResponse, ApiBadRequestResponse } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { AddUserDto } from './dto/user.add';
 import { LoginUserDto } from './dto/user.login';
+import { Response } from 'express';
 
 @ApiTags('api/v1/user')
 @Controller('user')
@@ -24,6 +27,7 @@ export class UserController {
   @ApiBadRequestResponse({ description: "User with that email already exists" })
   @ApiBadRequestResponse({ description: "User creation failed. Please try again or text support team" })
   @UsePipes(ValidationPipe)
+  @Redirect('http://localhost:3000/user/login')
   @Post()
   async add(
     @Body() addUserDto: AddUserDto,
@@ -53,11 +57,15 @@ export class UserController {
   @ApiOkResponse({ description: "Login successfully" })
   @ApiBadRequestResponse({ description: "Email or password is incorrect" })
   @UsePipes(ValidationPipe)
+  @Redirect('http://localhost:3000/')
   @Post('/login')
   async login(
     @Body() loginUserDto: LoginUserDto,
+    @Res({ passthrough: true }) res: Response
   ) {
-    return await this.userService.login(loginUserDto);
+    const token = await this.userService.login(loginUserDto);
+
+    res.cookie('accessToken', token);
   }
  
   @ApiOkResponse({ description: "User deleted successfully" })

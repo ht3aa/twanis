@@ -4,7 +4,7 @@ import { LoginUserDto } from './dto/user.login';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
-import { User } from './user.entity';
+import { User } from '../entity/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
@@ -28,11 +28,16 @@ export class UserService {
     }
 
     try {
-      this.userRepository.create({
+      const user = this.userRepository.create({
         username,
         email,
         password: await bcrypt.hash(password, 10),
       });
+
+      console.log(user)
+
+      await this.userRepository.save(user);
+
     } catch (error) {
       console.log(error);
       if (error.code === '23505') {
@@ -78,6 +83,7 @@ export class UserService {
 
   async login(loginUserDto: LoginUserDto) {
     const user = await this.findByUsername(loginUserDto.username, false);
+    console.log(user, loginUserDto);
     if (user) {
       if (!(await bcrypt.compare(loginUserDto.password, user.password))) {
         throw new BadRequestException('Email or password is incorrect');
@@ -90,7 +96,12 @@ export class UserService {
         role: user.role,
       };
 
-      return await this.jwtService.signAsync(payload);
+      const token = await this.jwtService.signAsync(payload);
+      user.token = token;
+
+      await this.userRepository.save(user);
+
+      return token
     } else {
       throw new BadRequestException('Email or password is incorrect');
     }

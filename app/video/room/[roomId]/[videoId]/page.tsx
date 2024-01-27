@@ -5,6 +5,7 @@ import { io, Socket } from "socket.io-client";
 
 export default function VideoRoom({ params }: { params: { videoId: string, roomId: string } }) {
   let socket: Socket;
+  const [isHost, setIsHost] = useState(false);
   const videoEl: MutableRefObject<HTMLVideoElement | null> = useRef(null);
   const [chatMessages, setChatMessages]: [Array<{ msg: string }>, any] = useState([]);
 
@@ -36,8 +37,13 @@ export default function VideoRoom({ params }: { params: { videoId: string, roomI
     setChatMessages([...chatMessages, { msg: data }]);
   });
 
+  socket.on("hostMember", function () {
+    setIsHost(true);
+    console.log(isHost)
+  })
+
   function sendPlayMessage() {
-    if (!videoEl.current) return;
+    if(!isHost) return;
     console.log("play");
     socket.emit("play", {
       time: videoEl.current.currentTime,
@@ -46,7 +52,8 @@ export default function VideoRoom({ params }: { params: { videoId: string, roomI
   }
 
   function sendPauseMessage() {
-    console.log("pause");
+    if(!isHost) return;
+
     socket.emit("pause", params.roomId);
   }
 
@@ -65,9 +72,10 @@ export default function VideoRoom({ params }: { params: { videoId: string, roomI
     socket.emit("room", params.roomId);
   }
 
+
   useEffect(() => {
     joinRoom();
-  })
+  }, [])
 
   return (
     <div className="w-full h-screen flex justify-around items-center">
@@ -76,7 +84,7 @@ export default function VideoRoom({ params }: { params: { videoId: string, roomI
         onPlay={sendPlayMessage}
         onPause={sendPauseMessage}
         width="500"
-        controls
+        controls={isHost}
         ref={videoEl}
         src={`http://192.168.0.122:8000/api/v1/video/${params.videoId}`}
       ></video>

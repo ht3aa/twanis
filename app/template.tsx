@@ -52,12 +52,19 @@ export default function Template({ children }: { children: ReactNode }) {
                 </ChakraLink>
               </Box>
               <Box>
-                <ChakraLink as={Link} href="/video-upload">
+                <ChakraLink as={Link} href="/video/upload">
                   Upload a Video
                 </ChakraLink>
               </Box>
               <Box>
-                <Input placeholder="Type here..." />
+                <ChakraLink as={Link} href="/user/register">
+                  Register
+                </ChakraLink>
+              </Box>
+              <Box>
+                <ChakraLink as={Link} href="/user/login">
+                  Login
+                </ChakraLink>
               </Box>
             </Stack>
           </DrawerBody>

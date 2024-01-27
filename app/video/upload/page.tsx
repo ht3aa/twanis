@@ -7,21 +7,13 @@ import {
   Card,
   CardBody,
   Stack,
-  HStack,
   Button,
   Box,
   Heading,
   Textarea,
 } from "@chakra-ui/react";
-import { useState } from "react";
 
 export default function VideoUpload() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   return (
     <Box
@@ -117,24 +109,5 @@ export default function VideoUpload() {
         </CardBody>
       </Card>
     </Box>
-    // <form className="m-2" action="http://localhost:8000/api/v1/video" method="post" encType="multipart/form-data">
-    //   <div className="border border-gray-700 w-[500px] my-2 p-2">
-    //     <label htmlFor="videoFile">Video File: </label>
-    //     <input id="videoFile" type="file" name="videoFile" accept="video/*" />
-    //   </div>
-    //   <div className="border border-gray-700 w-[500px] my-2 p-2">
-    //     <label htmlFor="thumbnailFile">thumbnail File: </label>
-    //     <input id="thumbnailFile" type="file" name="thumbnailFile" accept="image/*" />
-    //   </div>
-    //   <div className="border border-gray-700 w-[500px] my-2 p-2">
-    //     <label htmlFor="title">video title: </label>
-    //     <input className="border border-blue-500" id="title" type="text" name="title" />
-    //   </div>
-    //   <div className="border border-gray-700 w-[500px] my-2 p-2">
-    //     <label htmlFor="description">video description: </label>
-    //     <input className="border border-blue-500" id="description" type="text" name="description" />
-    //   </div>
-    //   <button className="btn btn-primary" type="submit">Submit</button>
-    // </form>
   );
 }

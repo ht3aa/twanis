@@ -34,17 +34,16 @@ export class UserService {
         password: await bcrypt.hash(password, 10),
       });
 
-      console.log(user)
+      console.log(user);
 
       await this.userRepository.save(user);
-
     } catch (error) {
       console.log(error);
       if (error.code === '23505') {
-        throw new BadRequestException("User with that email already exists");
+        throw new BadRequestException('User with that email already exists');
       } else {
         throw new BadRequestException(
-          "User creation failed. Please try again or text support team",
+          'User creation failed. Please try again or text support team',
         );
       }
     }
@@ -83,7 +82,6 @@ export class UserService {
 
   async login(loginUserDto: LoginUserDto) {
     const user = await this.findByUsername(loginUserDto.username, false);
-    console.log(user, loginUserDto);
     if (user) {
       if (!(await bcrypt.compare(loginUserDto.password, user.password))) {
         throw new BadRequestException('Email or password is incorrect');
@@ -101,9 +99,7 @@ export class UserService {
 
       await this.userRepository.save(user);
 
-      return token
-    } else {
-      throw new BadRequestException('Email or password is incorrect');
+      return token;
     }
   }
 

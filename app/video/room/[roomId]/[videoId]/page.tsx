@@ -3,13 +3,16 @@
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
-export default function VideoRoom({ params }: { params: { videoId: string, roomId: string } }) {
-  let socket: Socket;
+export default function VideoRoom({ params }: { params: { videoId: string; roomId: string } }) {
+  const [socket, setSocket]: [Socket, any] = useState(io("http://192.168.0.122:8000"));
   const [isHost, setIsHost] = useState(false);
   const videoEl: MutableRefObject<HTMLVideoElement | null> = useRef(null);
   const [chatMessages, setChatMessages]: [Array<{ msg: string }>, any] = useState([]);
 
-  socket = io("http://192.168.0.122:8000");
+  useEffect(() => {
+    joinRoom();
+  }, []);
+
   socket.on("connect", () => {
     console.log("connected");
   });
@@ -21,7 +24,6 @@ export default function VideoRoom({ params }: { params: { videoId: string, roomI
   socket.on("played", function (data) {
     if (!videoEl.current) return;
 
-    console.log(data)
     if (videoEl.current.duration !== data && videoEl.current.currentTime !== data) {
       videoEl.current.currentTime = data;
       videoEl.current.play();
@@ -39,20 +41,19 @@ export default function VideoRoom({ params }: { params: { videoId: string, roomI
 
   socket.on("hostMember", function () {
     setIsHost(true);
-    console.log(isHost)
-  })
+  });
 
   function sendPlayMessage() {
-    if(!isHost) return;
-    console.log("play");
+    if (!isHost || !videoEl.current) return;
+
     socket.emit("play", {
       time: videoEl.current.currentTime,
-      roomId: params.roomId
+      roomId: params.roomId,
     });
   }
 
   function sendPauseMessage() {
-    if(!isHost) return;
+    if (!isHost) return;
 
     socket.emit("pause", params.roomId);
   }
@@ -62,7 +63,7 @@ export default function VideoRoom({ params }: { params: { videoId: string, roomI
     if (!input.value) return;
     socket.emit("chat", {
       message: input.value,
-      roomId: params.roomId
+      roomId: params.roomId,
     });
 
     input.value = "";
@@ -71,11 +72,6 @@ export default function VideoRoom({ params }: { params: { videoId: string, roomI
   function joinRoom() {
     socket.emit("room", params.roomId);
   }
-
-
-  useEffect(() => {
-    joinRoom();
-  }, [])
 
   return (
     <div className="w-full h-screen flex justify-around items-center">
@@ -90,8 +86,8 @@ export default function VideoRoom({ params }: { params: { videoId: string, roomI
       ></video>
       <div className="w-[50%] overflow-scroll h-full flex flex-col justify-between bg-gray-200">
         <div>
-          {chatMessages.map(({ msg }) => (
-            <div className="w-full bg-gray-300 p-2 my-2">
+          {chatMessages.map(({ msg }, i) => (
+            <div key={i} className="w-full bg-gray-300 p-2 my-2">
               <span>{msg}</span>
             </div>
           ))}

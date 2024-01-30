@@ -73,7 +73,7 @@ export default function Home() {
               <Divider />
               <CardFooter>
                 <ButtonGroup spacing="2">
-                  <ChakraLink as={Link} href={`/video/room/${Lib.generateRoomId()}/${video.id}?host=true`}>
+                  <ChakraLink as={Link} href={`/video/room/${Lib.generateRoomId()}/${video.id}`}>
                     <Button variant="solid" colorScheme="blue">
                       Make Room
                     </Button>

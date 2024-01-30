@@ -58,7 +58,7 @@ export default function Home() {
       <main>
         <div className="flex flex-wrap m-2">
           {videos.map((video: any) => (
-            <Card key={video.id} maxW="sm">
+            <Card key={video.id} mx={2} shadow={"md"} maxW="sm">
               <CardBody>
                 <Image
                   src={`http://192.168.0.122:8000/api/v1/video/thumbnail/${video.id}`}

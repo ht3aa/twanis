@@ -31,6 +31,7 @@ export default function Template({ children }: { children: ReactNode }) {
         leftIcon={<HamburgerIcon />}
         right={10}
         bottom={10}
+        zIndex={900}
         boxShadow="dark-lg"
         ref={btnRef}
         colorScheme="teal"

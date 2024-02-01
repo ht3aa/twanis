@@ -5,6 +5,7 @@ export function middleware(request: NextRequest) {
   const currentUser = request.cookies.get("accessToken")?.value;
 
 
+
   if (
     request.nextUrl.pathname === "/user/login" ||
     request.nextUrl.pathname === "/user/register" ||

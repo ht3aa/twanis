@@ -1,16 +1,27 @@
 "use client";
 
+import { parseJwt } from "@/app/lib/jwt";
+import { useCookies } from "next-client-cookies";
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
 export default function VideoRoom({ params }: { params: { videoId: string; roomId: string } }) {
+  const cookies = useCookies();
+
+  const [userInfo, setUserInfo]: [
+    { userId: string; username: string; email: string; role: string },
+    any,
+  ] = useState({ userId: "", username: "", email: "", role: "" });
   const [socket, setSocket]: [Socket, any] = useState(io("http://192.168.0.122:8000"));
   const [isHost, setIsHost] = useState(false);
   const videoEl: MutableRefObject<HTMLVideoElement | null> = useRef(null);
-  const [chatMessages, setChatMessages]: [Array<{ msg: string }>, any] = useState([]);
+  const [chatMessages, setChatMessages]: [Array<{ msg: string; username: string }>, any] = useState(
+    [],
+  );
 
   useEffect(() => {
     joinRoom();
+    setUserInfo(parseJwt(cookies.get("accessToken")));
   }, []);
 
   socket.on("connect", () => {
@@ -35,8 +46,8 @@ export default function VideoRoom({ params }: { params: { videoId: string; roomI
     videoEl.current.pause();
   });
 
-  socket.on("chating", function (data) {
-    setChatMessages([...chatMessages, { msg: data }]);
+  socket.on("chating", function (data: { message: string; username: string }) {
+    setChatMessages([...chatMessages, { msg: data.message, username: data.username }]);
   });
 
   socket.on("hostMember", function () {
@@ -64,6 +75,7 @@ export default function VideoRoom({ params }: { params: { videoId: string; roomI
     socket.emit("chat", {
       message: input.value,
       roomId: params.roomId,
+      username: userInfo.username,
     });
 
     input.value = "";
@@ -86,9 +98,10 @@ export default function VideoRoom({ params }: { params: { videoId: string; roomI
       ></video>
       <div className="w-[50%] overflow-scroll h-full flex flex-col justify-between bg-gray-200">
         <div>
-          {chatMessages.map(({ msg }, i) => (
-            <div key={i} className="w-full bg-gray-300 p-2 my-2">
-              <span>{msg}</span>
+          {chatMessages.map(({ msg, username }, i) => (
+            <div key={i} className="w-full p-2 my-2">
+              <p className="bg-gray-700 text-white p-2">{username}</p>
+              <span className="p-2">{msg}</span>
             </div>
           ))}
         </div>

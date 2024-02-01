@@ -16,17 +16,32 @@ import {
   Link as ChakraLink,
 } from "@chakra-ui/react";
 import Lib from "./lib";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Home() {
-  const [drawerState, setDrawerState] = useState(false);
-  const [videos, setVideos] = useState([]);
+
 
   const fetchVideos = async () => {
     const response = await fetch("http://192.168.0.122:8000/api/v1/video");
-    const data = await response.json();
-    console.log(data);
-    setVideos(data);
+
+    if (!response.ok) {
+      throw new Error("Something went wrong. Refresh the page");
+    }
+   
+    return response.json();
   };
+
+  const { isLoading, isError, error, data: videos, refetch: refetchVideos } = useQuery({
+    queryKey: ["videos"],
+    queryFn: fetchVideos,
+  });
+
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error: {error.message}</div>;
+
+
+  console.log(videos)
+
 
   const deleteVideo = async (id: number) => {
     const response = await fetch(`http://192.168.0.122:8000/api/v1/video/${id}`, {
@@ -34,24 +49,9 @@ export default function Home() {
     });
     const data = await response.json();
     console.log(data);
-    fetchVideos();
+    refetchVideos();
   };
 
-  const toggleDrawer = (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
-    if (
-      event.type === "keydown" &&
-      ((event as React.KeyboardEvent).key === "Tab" ||
-        (event as React.KeyboardEvent).key === "Shift")
-    ) {
-      return;
-    }
-
-    setDrawerState(open);
-  };
-
-  useEffect(() => {
-    fetchVideos();
-  }, []);
 
   return (
     <div>

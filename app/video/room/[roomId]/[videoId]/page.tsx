@@ -1,6 +1,7 @@
 "use client";
 
 import { parseJwt } from "@/app/lib/jwt";
+import { Button } from "@chakra-ui/react";
 import { useCookies } from "next-client-cookies";
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
@@ -21,7 +22,6 @@ export default function VideoRoom({ params }: { params: { videoId: string; roomI
 
   useEffect(() => {
     joinRoom();
-    setUserInfo(parseJwt(cookies.get("accessToken")));
   }, []);
 
   socket.on("connect", () => {
@@ -30,6 +30,9 @@ export default function VideoRoom({ params }: { params: { videoId: string; roomI
 
   socket.on("disconnect", () => {
     console.log("disconnected");
+    socket.emit("deleteRoom", {
+      roomPath: `/video/room/${params.roomId}/${params.videoId}`,
+    });
   });
 
   socket.on("played", function (data) {
@@ -53,6 +56,10 @@ export default function VideoRoom({ params }: { params: { videoId: string; roomI
   socket.on("hostMember", function () {
     setIsHost(true);
   });
+
+  socket.on("deletedRoom", function () {
+    window.location.href = "/";
+  })
 
   function sendPlayMessage() {
     if (!isHost || !videoEl.current) return;
@@ -82,10 +89,25 @@ export default function VideoRoom({ params }: { params: { videoId: string; roomI
   }
 
   function joinRoom() {
-    socket.emit("room", params.roomId);
+    const user = parseJwt(cookies.get("accessToken"));
+    setUserInfo(user);
+
+    socket.emit("room", {
+      roomId: params.roomId,
+      videoId: params.videoId,
+      roomPath: `/video/room/${params.roomId}/${params.videoId}`,
+      username: user.username,
+    });
   }
 
   return (
+    <>
+      {isHost && 
+      <Button onClick={() => socket.emit("deleteRoom", { roomPath: `/video/room/${params.roomId}/${params.videoId}` })} colorScheme="red">
+          Delete Room
+      </Button>
+
+      }
     <div className="w-full h-screen flex justify-around items-center">
       <video
         id="videoEl"
@@ -94,7 +116,7 @@ export default function VideoRoom({ params }: { params: { videoId: string; roomI
         width="500"
         controls={isHost}
         ref={videoEl}
-        src={`http://192.168.0.122:8000/api/v1/video/${params.videoId}`}
+        src={`http://192.168.0.122:8000/api/v1/video/stream/${params.videoId}`}
       ></video>
       <div className="w-[50%] overflow-scroll h-full flex flex-col justify-between bg-gray-200">
         <div>
@@ -119,5 +141,6 @@ export default function VideoRoom({ params }: { params: { videoId: string; roomI
         </div>
       </div>
     </div>
+    </>
   );
 }

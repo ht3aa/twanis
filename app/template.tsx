@@ -53,6 +53,11 @@ export default function Template({ children }: { children: ReactNode }) {
                 </ChakraLink>
               </Box>
               <Box>
+                <ChakraLink as={Link} href="/join-room">
+                  Join Room
+                </ChakraLink>
+              </Box>
+              <Box>
                 <ChakraLink as={Link} href="/video/upload">
                   Upload a Video
                 </ChakraLink>

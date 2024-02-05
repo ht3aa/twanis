@@ -97,6 +97,8 @@ export class UserService {
       const token = await this.jwtService.signAsync(payload);
       user.token = token;
 
+      console.log(token)
+
       await this.userRepository.save(user);
 
       return token;

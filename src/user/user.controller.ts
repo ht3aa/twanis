@@ -23,7 +23,7 @@ import { UserService } from './user.service';
 import { AddUserDto } from './dto/user.add';
 import { LoginUserDto } from './dto/user.login';
 import { Response } from 'express';
-import { LoginExceptionFilter } from 'src/filters/login-exception.filter';
+import { UserExceptionFilter } from 'src/filters/user-exception.filter';
 
 @ApiTags('api/v1/user')
 @Controller('user')
@@ -37,6 +37,7 @@ export class UserController {
     description: 'User creation failed. Please try again or text support team',
   })
   @UsePipes(ValidationPipe)
+  @UseFilters(UserExceptionFilter)
   @Redirect('http://localhost:3000/user/login')
   @Post()
   async add(@Body() addUserDto: AddUserDto) {
@@ -61,7 +62,7 @@ export class UserController {
 
   @ApiOkResponse({ description: 'Login successfully' })
   @ApiBadRequestResponse({ description: 'Email or password is incorrect' })
-  @UseFilters(LoginExceptionFilter)
+  @UseFilters(UserExceptionFilter)
   @UsePipes(ValidationPipe)
   @Redirect('http://localhost:3000/')
   @Post('/login')

@@ -6,6 +6,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { VideoService } from 'src/video/video.service';
 
 @WebSocketGateway({
   cors: {
@@ -18,15 +19,43 @@ export class WebSocketsGateway {
 
   hosts: Array<{ roomId: string; clientId: string }> = [];
 
-  @SubscribeMessage('room')
-  handleRoomMessage(@MessageBody() roomId: string, @ConnectedSocket() client: Socket): any {
-    this.server.in(client.id).socketsJoin(roomId);
+  constructor(private videoService: VideoService) {}
 
-    if (!this.hosts.find((host) => host.roomId === roomId)) {
-      console.log('hi')
-      this.hosts.push({ roomId, clientId: client.id });
-      this.server.in(roomId).emit('hostMember');
+  @SubscribeMessage('room')
+  async handleRoomMessage(
+    @MessageBody() body: { roomId: string, username: string, roomPath: string, videoId: string },
+    @ConnectedSocket() client: Socket,
+  ) {
+    this.server.in(client.id).socketsJoin(body.roomId);
+
+    if (!this.hosts.find((host) => host.roomId === body.roomId)) {
+      this.hosts.push({ roomId: body.roomId, clientId: client.id });
+
+      console.log(body);
+      await this.videoService.createRoom({
+        videoId: body.videoId,
+        roomPath: body.roomPath,
+        hostName: body.username,
+      })
+
+      this.server.in(body.roomId).emit('hostMember');
     }
+  }
+
+  @SubscribeMessage('deleteRoom')
+  async handleDeleteRoomMessage(
+    @MessageBody() body: { roomPath: string },
+    @ConnectedSocket() client: Socket,
+  ) {
+    const { roomPath } = body;
+    const host = this.hosts.find((host) => host.clientId === client.id);
+
+    if (host) {
+      await this.videoService.deleteRoom(roomPath);
+      this.server.in(host.roomId).emit('deletedRoom', roomPath);
+    }
+
+
   }
 
   @SubscribeMessage('pause')
@@ -40,7 +69,9 @@ export class WebSocketsGateway {
   }
 
   @SubscribeMessage('chat')
-  handleChatMessage(@MessageBody() data: { roomId: string; message: string }): any {
-    this.server.in(data.roomId).emit('chating', data.message);
+  handleChatMessage(
+    @MessageBody() data: { roomId: string; message: string; username: string },
+  ): any {
+    this.server.in(data.roomId).emit('chating', { message: data.message, username: data.username });
   }
 }

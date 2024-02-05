@@ -28,6 +28,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Video } from 'src/entity/video.entity';
+import { CreateRoomDto } from './dto/room.create';
+import { Room } from 'src/entity/room.entity';
 
 @ApiTags('api/v1/video')
 @Controller('video')
@@ -48,7 +50,7 @@ export class VideoController {
       },
     ),
   )
-  @Redirect('http://localhost:3000/', 301)
+  @Redirect('http://192.168.0.122:3000/', 301)
   async uploadVideo(
     @UploadedFiles() files: { videoFile: Express.Multer.File; thumbnailFile: Express.Multer.File },
     @Body() videoUploadDto: VideoUploadDto,
@@ -60,7 +62,7 @@ export class VideoController {
   @ApiResponse({ status: 206, description: 'Partial of the video streamed successfully' })
   @ApiBadRequestResponse({ description: 'Range header is required' })
   @ApiNotFoundResponse({ description: 'Video not found' })
-  @Get(':id')
+  @Get('stream/:id')
   @HttpCode(206)
   async streamVideo(
     @Param('id') id: string,
@@ -74,7 +76,6 @@ export class VideoController {
     return new StreamableFile(videoStream);
   }
 
-
   @Get('thumbnail/:id')
   async streamThumbnail(
     @Param('id') id: string,
@@ -86,6 +87,21 @@ export class VideoController {
 
     return new StreamableFile(thumbnailStream);
   }
+
+  @ApiResponse({ status: 201, description: 'Room created successfully' })
+  @ApiNotFoundResponse({ description: 'Room not found' })
+  @UsePipes(ValidationPipe)
+  @Post('room')
+  async createRoom(createRoomDto: CreateRoomDto): Promise<Room> {
+    return await this.videoService.createRoom(createRoomDto);
+  }
+
+  @ApiResponse({ status: 200, description: 'Rooms fetched successfully' })
+  @Get('rooms')
+  async getRooms(): Promise<Room[]> {
+    return await this.videoService.getRooms();
+  }
+
 
   @ApiResponse({ status: 200, description: 'Videos data fetched successfully' })
   @Get()

@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Room } from './room.entity';
 
 @Entity()
 export class Video {
@@ -16,4 +17,8 @@ export class Video {
 
   @Column()
   thumbnailPath: string
+
+
+  @OneToMany(() => Room, (room) => room.video)
+  rooms: Room[] | null
 }

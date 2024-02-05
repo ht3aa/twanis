@@ -4,6 +4,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Video } from '../entity/video.entity';
 import * as fs from 'fs';
+import { Room } from 'src/entity/room.entity';
+import { CreateRoomDto } from './dto/room.create';
 
 interface headersWithRange extends Headers {
   range?: string;
@@ -11,7 +13,10 @@ interface headersWithRange extends Headers {
 
 @Injectable()
 export class VideoService {
-  constructor(@InjectRepository(Video) private videoRepository: Repository<Video>) {}
+  constructor(
+    @InjectRepository(Video) private videoRepository: Repository<Video>,
+    @InjectRepository(Room) private roomRepository: Repository<Room>,
+  ) {}
 
   async uploadVideo(
     videoFile: Express.Multer.File,
@@ -26,7 +31,10 @@ export class VideoService {
         description,
         videoPath: videoFile.path,
         thumbnailPath: thumbnailFile.path,
+        rooms: [],
       });
+
+
 
       await this.videoRepository.save(video);
     } catch (error) {
@@ -37,7 +45,7 @@ export class VideoService {
         throw new BadRequestException('video upload failed. Please try again or text support team');
       }
     }
-    return
+    return;
   }
 
   async streamVideo(id: string, req: Request) {
@@ -73,7 +81,6 @@ export class VideoService {
     return { headers, videoStream };
   }
 
-
   async streamThumbnail(id: string) {
     const video = await this.videoRepository.findOneBy({ id: id });
 
@@ -84,14 +91,46 @@ export class VideoService {
     const { thumbnailPath } = video;
     const thumbnailStream = fs.createReadStream('./' + thumbnailPath);
 
-
-
     const headers = {
       'Content-Type': 'image/*',
-    }
+    };
 
     return { headers, thumbnailStream };
+  }
 
+  async createRoom(createRoomDto: CreateRoomDto) {
+    const { videoId, roomPath, hostName } = createRoomDto;
+    console.log( createRoomDto);
+
+    const video = await this.videoRepository.findOneBy({ id: videoId });
+
+    if (!video) {
+      throw new NotFoundException('video not found');
+    }
+
+    const room = this.roomRepository.create({
+      video,
+      roomPath,
+      hostName
+    });
+
+    await this.roomRepository.save(room);
+    await this.videoRepository.save(video);
+
+    return room;
+
+  }
+
+  async deleteRoom(roomPath: string) {
+    await this.roomRepository.delete({ roomPath });
+  }
+
+  async getRooms(): Promise<Room[]> {
+    return await this.roomRepository.find({
+      relations: {
+        video: true
+      }
+    });
   }
 
   async getVides(): Promise<Video[]> {
